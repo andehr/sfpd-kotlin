@@ -1,3 +1,5 @@
+package collections
+
 import com.squareup.moshi.JsonClass
 /**
  * Represents a frequency distribution over strings.
@@ -17,18 +19,18 @@ class Counter(val smoothing: Double = 0.0,
     val vocab: Set<String>
         get() = counts.keys
 
-    var total: Double = counts.values.sum()
-        private set
-
     val totalSmoothed: Double
         get() = total + (vocabSize * smoothing)
+
+    var total: Double = counts.values.sum()
+        private set
 
 
     /**
      * Increment the count for a string by an amount (1 if not specified)
      */
     fun inc(feature: String, increment: Double = 1.0) {
-        counts.merge(feature, increment) { existing, new -> existing + new } ?.plus(smoothing)
+        counts.merge(feature, increment) { existing, new -> existing + new }
         total += increment
     }
 
@@ -37,7 +39,9 @@ class Counter(val smoothing: Double = 0.0,
      * Get a map of the strings to their counts, sorted most frequent first (pre-smoothed counts).
      */
     fun mostFrequent(): Map<String, Double> =
-        counts.entries.sortedByDescending{ it.value }.associate{ it.toPair() }
+        counts.entries
+            .sortedByDescending{ it.value }
+            .associate{ it.toPair() }
 
     /**
      * Return a new counter with only those strings which have a count equal to
@@ -83,7 +87,7 @@ class Counter(val smoothing: Double = 0.0,
 
 
     /**
-     * Functions for building Counter objects from other types.
+     * Functions for building collections.Counter objects from other types.
      */
     companion object Factory {
 
@@ -92,7 +96,9 @@ class Counter(val smoothing: Double = 0.0,
          */
         fun fromIterable(features : Iterable<String>, smoothing: Double = 0.0) =
             Counter(smoothing).apply {
-                features.forEach { inc(it) }
+                features.forEach {
+                    inc(it)
+                }
             }
     }
 

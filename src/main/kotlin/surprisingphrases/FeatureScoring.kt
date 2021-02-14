@@ -1,4 +1,4 @@
-import com.google.common.collect.Ordering
+import collections.Counter
 import kotlin.math.ln
 
 /**

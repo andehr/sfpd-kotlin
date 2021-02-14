@@ -1,4 +1,4 @@
-import com.squareup.moshi.Moshi
+import collections.Counter
 
 /**
  * Created by Andrew D. Robertson on 23/12/2020.
@@ -44,12 +44,12 @@ fun main() {
 
 //    p.root.prettyPrint()
 
-//    val c2 = Counter.fromIterable(listOf("test", "test", "this"), smoothing = 0.2)
+//    val c2 = collections.Counter.fromIterable(listOf("test", "test", "this"), smoothing = 0.2)
 
-//    val c3 = Counter(smoothing = 0.1, counts= mutableMapOf("this" to 2.0, "that" to 3.0))
+//    val c3 = collections.Counter(smoothing = 0.1, counts= mutableMapOf("this" to 2.0, "that" to 3.0))
 
 //    val moshi: Moshi = Moshi.Builder().build()
-//    val adapter = moshi.adapter(Counter::class.java)
+//    val adapter = moshi.adapter(collections.Counter::class.java)
 //
 //    val text = adapter.toJson(c);
 
