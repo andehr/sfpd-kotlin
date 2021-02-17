@@ -8,10 +8,13 @@ class DiffusionPathwayGraph {
 
     val graph: Graph<Action, DefaultEdge> = SimpleDirectedGraph(DefaultEdge::class.java)
 
-    fun addAction(action: Action) =
+    val actions: Set<Action>
+        get() = graph.vertexSet()
+
+    fun add(action: Action) =
         graph.addVertex(action)
 
-    fun addInfluencedAction(action: InfluencedAction) =
+    fun add(action: InfluencedAction) =
         with(graph){
             addVertex(action.influencer)
             addVertex(action.influencee)
@@ -20,5 +23,16 @@ class DiffusionPathwayGraph {
 
     fun numInfluencingActions(action: Action): Int =
         graph.inDegreeOf(action)
+
+    fun parentActions(action: Action): Set<Action> =
+        graph.incomingEdgesOf(action)
+            .map { graph.getEdgeSource(it) }
+            .toSet()
+
+    fun numParentActions(action: Action): Int =
+        graph.inDegreeOf(action)
+
+    fun hasParentActions(action: Action): Boolean =
+        numParentActions(action) > 0
 
 }
