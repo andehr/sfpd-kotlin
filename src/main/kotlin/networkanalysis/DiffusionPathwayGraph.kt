@@ -35,4 +35,7 @@ class DiffusionPathwayGraph {
     fun hasParentActions(action: Action): Boolean =
         numParentActions(action) > 0
 
+    fun isOrphan(action: Action): Boolean =
+        !hasParentActions(action)
+
 }
