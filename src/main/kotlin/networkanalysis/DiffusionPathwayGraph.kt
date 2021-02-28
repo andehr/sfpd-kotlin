@@ -38,4 +38,9 @@ class DiffusionPathwayGraph {
     fun isOrphan(action: Action): Boolean =
         !hasParentActions(action)
 
+    companion object Factory {
+        fun of(actions: List<InfluencedAction>): DiffusionPathwayGraph {
+            return DiffusionPathwayGraph().apply { actions.forEach { add(it) } }
+        }
+    }
 }

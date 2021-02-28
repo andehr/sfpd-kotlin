@@ -1,5 +1,6 @@
 import java.lang.Math.ulp
 import kotlin.math.abs
+import kotlin.math.ln
 import kotlin.math.max
 
 /**
@@ -20,3 +21,6 @@ infix fun Double.eq(other: Double) =
  */
 infix fun Double.ge(other: Double) =
     this > other || this.eq(other)
+
+fun lnSafe(d: Double): Double =
+    if (d == 0.0) 0.0 else ln(d)

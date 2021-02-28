@@ -58,7 +58,7 @@ class InfluenceTable(graph: DiffusionPathwayGraph, val smoothing: Double = 0.000
     fun numUsers(): Int =
         users.size
 
-    fun getInfluence(influencee: String, influencer: String): Double =
+    fun influence(influencee: String, influencer: String): Double =
         influenceTable.get(influencee)?.get(influencer) ?: 0.0 + smoothing
 
     fun addInfluence(inc: Double, influencee: String, influencer: String) {
