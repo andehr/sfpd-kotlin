@@ -12,33 +12,33 @@ class InfluenceTable(graph: DiffusionPathwayGraph, val smoothing: Double = 0.000
         buildTable(graph)
     }
 
-    private fun influence(ancestor: Action, node: Action, graph: DiffusionPathwayGraph): Double {
-        if (graph.numParentActions(node) == 0) {
+    private fun influence(node: Action, ancestor: Action, graph: DiffusionPathwayGraph): Double {
+        if (graph.numInfluencingActions(node) == 0) {
             return if (ancestor == node) 1.0 else 0.0
         } else {
             return if (ancestor == node) {
                 1.0 - transferRate
             } else {
-                (transferRate / graph.numParentActions(node)) *
-                        graph.parentActions(node).map { influence(ancestor, it, graph) }.sum()
+               (transferRate / graph.numInfluencingActions(node)) *
+                        graph.influencingActions(node).map{ influence(it, ancestor, graph) }.sum()
             }
         }
     }
 
     private fun buildTable(graph: DiffusionPathwayGraph) {
-        for (a1 in graph.actions) {
+        for (influencee in graph.actions) {
 
-            if (graph.hasParentActions(a1)) {
-                updateUser(a1.userId, true)
-                for (parent in graph.parentActions(a1)){
+            if (graph.hasInfluencingActions(influencee)) {
+                updateUser(influencee.userId, true)
+                for (parent in graph.influencingActions(influencee)){
                     updateUser(parent.userId, false)
                 }
             }
 
-            for (a2 in graph.actions){
-                with(influence(a1, a2, graph)){
-                    if (this > 0){
-                        addInfluence(this, a1.userId, a2.userId)
+            for (influencer in graph.actions){
+                influence(influencee, influencer, graph).let {
+                    if (it > 0){
+                        addInfluence(it, influencee.userId, influencer.userId)
                     }
                 }
             }
@@ -59,12 +59,21 @@ class InfluenceTable(graph: DiffusionPathwayGraph, val smoothing: Double = 0.000
         users.size
 
     fun influence(influencee: String, influencer: String): Double =
-        influenceTable.get(influencee)?.get(influencer) ?: 0.0 + smoothing
+        (influenceTable.get(influencee)?.get(influencer) ?: 0.0) + smoothing
 
     fun addInfluence(inc: Double, influencee: String, influencer: String) {
         influenceTable.getOrPut(influencee) { mutableMapOf() }
             .compute(influencer) { user, influence ->
                 if (influence == null) inc else inc + influence }
+    }
+
+    fun prettyPrint(){
+        for ((influencee, influencers) in influenceTable) {
+            println("$influencee <-")
+            for ((influencer, influence) in influencers) {
+                println("  $influencer = $influence")
+            }
+        }
     }
 
 }

@@ -1,16 +1,9 @@
 package networkanalysis
 
 import com.google.common.collect.Iterators
-import com.mxgraph.layout.mxCircleLayout
-import com.mxgraph.layout.mxIGraphLayout
-import com.mxgraph.swing.mxGraphComponent
-import org.jgrapht.ext.JGraphXAdapter
-import org.jgrapht.graph.DefaultEdge
 import randomElement
 import randomExcluding
 import randomPair
-import javax.swing.JFrame
-import javax.swing.WindowConstants
 
 
 /**
@@ -31,8 +24,8 @@ class ActionGenerator(
             var actionId = 0
 
             val influencerGroupies = (1..influencers).associateBy(
-                { inf -> "infl#$inf" },
-                { inf -> (1..influencerFollowers).map { "grp#$it($inf)" }.toList() })
+                { inf -> "influencer#$inf" },
+                { inf -> (1..influencerFollowers).map { "groupie#$it($inf)" }.toList() })
 
             val influencerList = influencerGroupies.keys.toList();
 
@@ -66,22 +59,19 @@ fun main() {
     val influence = 2
     val followers = 2
 
-    val ag = ActionGenerator(influencers, influence, followers, intraConnections = 1)
-    val actions = ag.generateActions()
+//    val ag = ActionGenerator(influencers, influence, followers)
+//    val actions = ag.generateActions()
+
+    val actions = listOf(
+        Action(1, "a") influences Action(2, "b"),
+        Action(2, "b") influences Action(3, "c")
+    )
 
     val graph = DiffusionPathwayGraph.of(actions)
 
-    val frame = JFrame("DemoGraph")
-    frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+//    graph.display()
 
-    val graphAdapter: JGraphXAdapter<Action, DefaultEdge> = JGraphXAdapter(graph.graph)
+    val table = InfluenceTable(graph)
 
-    val layout: mxIGraphLayout = mxCircleLayout(graphAdapter)
-    layout.execute(graphAdapter.getDefaultParent())
-
-    frame.add(mxGraphComponent(graphAdapter))
-
-    frame.pack()
-    frame.isLocationByPlatform = true
-    frame.isVisible = true
+    table.prettyPrint()
 }
