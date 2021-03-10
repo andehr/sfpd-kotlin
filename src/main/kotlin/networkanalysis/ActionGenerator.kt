@@ -55,23 +55,21 @@ class ActionGenerator(
 
 @ExperimentalStdlibApi
 fun main() {
-    val influencers = 2
-    val influence = 2
-    val followers = 2
+    val influencers = 10
+    val influence = 10
+    val followers = 20
 
-//    val ag = ActionGenerator(influencers, influence, followers)
-//    val actions = ag.generateActions()
-
-    val actions = listOf(
-        Action(1, "a") influences Action(2, "b"),
-        Action(2, "b") influences Action(3, "c")
-    )
-
+    val ag = ActionGenerator(influencers, influence, followers, interConnections = 2, intraConnections = 5)
+    val actions = ag.generateActions()
     val graph = DiffusionPathwayGraph.of(actions)
 
 //    graph.display()
 
     val table = InfluenceTable(graph)
+//
+//    table.prettyPrint()
 
-    table.prettyPrint()
+    val audienceInfluenceAnalysis = AudienceInfluenceAnalysis(table, 10)
+
+    audienceInfluenceAnalysis.emUntilConvergence(100)
 }

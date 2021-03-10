@@ -12,6 +12,12 @@ class InfluenceTable(graph: DiffusionPathwayGraph, val smoothing: Double = 0.000
         buildTable(graph)
     }
 
+    fun users(): Set<String> =
+        users.keys
+
+    fun numUsers(): Int =
+        users.size
+
     private fun influence(node: Action, ancestor: Action, graph: DiffusionPathwayGraph): Double {
         if (graph.numInfluencingActions(node) == 0) {
             return if (ancestor == node) 1.0 else 0.0
@@ -51,12 +57,6 @@ class InfluenceTable(graph: DiffusionPathwayGraph, val smoothing: Double = 0.000
     fun updateUser(id: String, beingInfluenced: Boolean) {
         users.merge(id, !beingInfluenced) { old, new -> old && new }
     }
-
-    fun users(): Set<String> =
-        users.keys
-
-    fun numUsers(): Int =
-        users.size
 
     fun influence(influencee: String, influencer: String): Double =
         (influenceTable.get(influencee)?.get(influencer) ?: 0.0) + smoothing

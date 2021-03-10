@@ -13,6 +13,13 @@ operator fun DoubleArray.timesAssign(arr: DoubleArray) {
     }
 }
 
+infix fun DoubleArray.elementwisePlusAssign(arr: DoubleArray) {
+    requireSameSize(this, arr)
+    for (i in indices){
+        this[i] += arr[i]
+    }
+}
+
 operator fun DoubleArray.divAssign(n: Double) =
     mapInPlace { it / n }
 
@@ -41,4 +48,4 @@ fun DoubleArray.uniformSumTo1() =
     fill(1.0 / size)
 
 private fun requireSameSize(a: DoubleArray, b: DoubleArray) =
-    require(a.size != b.size) {"Array sizes do not match ($a.size != $b.size"}
+    require(a.size == b.size) {"Array sizes do not match ($a.size != $b.size"}

@@ -1,6 +1,7 @@
 package networkanalysis
 
 import divAssign
+import elementwisePlusAssign
 import lnSafe
 import mapInPlace
 import mapIndexedInPlace
@@ -15,13 +16,18 @@ class AudienceInfluenceAnalysis(val table: InfluenceTable, val clusters: Int, va
     var belongingness: Map<String, DoubleArray> = initBelongingness()
     var influence: Map<String, DoubleArray> = initInfluence()
     var priors: DoubleArray = initPriors()
+    var log: (String) -> Unit = { println(it) }
+
+    val users: Set<String>
+        get() = table.users()
 
     private fun initPriors(): DoubleArray =
         randomSumTo1(clusters, smoothing)
 
     private fun initInfluence(): Map<String, DoubleArray> {
-        val influence: Map<String, DoubleArray> = users().associateWith { DoubleArray(clusters) }
-        for (cluster in 0..clusters){
+        val influence: Map<String, DoubleArray> = users.associateWith { DoubleArray(clusters) }
+        // random initialisation of influence sums to one across all users per cluster
+        for (cluster in 0 until clusters){
             val randomised = randomSumTo1(table.numUsers(), smoothing)
             influence.values.forEachIndexed{ index, i -> i[cluster] = randomised[index] }
         }
@@ -29,13 +35,13 @@ class AudienceInfluenceAnalysis(val table: InfluenceTable, val clusters: Int, va
     }
 
     private fun initBelongingness(): Map<String, DoubleArray> =
-        users().associateWith { DoubleArray(clusters) }
+        users.associateWith { DoubleArray(clusters) }
 
     private fun computePriors(): DoubleArray{
         val newPriors = DoubleArray(clusters)
 
         // The prior for a cluster is the sum of user belongingness for that cluster, normalised further below
-        belongingness.values.forEachIndexed { cluster, probabilities -> newPriors[cluster] += probabilities[cluster]}
+        belongingness.values.forEach { probabilities -> newPriors elementwisePlusAssign probabilities }
 
         newPriors /= newPriors.sum()
 
@@ -46,11 +52,11 @@ class AudienceInfluenceAnalysis(val table: InfluenceTable, val clusters: Int, va
         val normalisationFactors = DoubleArray(clusters);
         val newInfluence = buildMap<String, DoubleArray> {
             // For each user and cluster, sum the belongingness of every user for that cluster, weighted by the number of actions that the current user influences on each
-            for (user: String in users()) {
+            for (user: String in users) {
                 val userInfluence = DoubleArray(clusters)
 
-                for (cluster in 0..clusters) {
-                    userInfluence[cluster] = users().map { table.influence(it, user) * (belongingness[user]!![cluster]) }.sum()
+                for (cluster in userInfluence.indices) {
+                    userInfluence[cluster] = users.map { table.influence(it, user) * (belongingness[it]!![cluster]) }.sum()
                     normalisationFactors[cluster] += userInfluence[cluster]
                 }
 
@@ -64,7 +70,7 @@ class AudienceInfluenceAnalysis(val table: InfluenceTable, val clusters: Int, va
 
     private fun computeBelongingness(): Map<String, DoubleArray> =
         buildMap {
-            for (user in users()){
+            for (user in users){
                 val userBelongingness = DoubleArray(clusters)
                 // If user isn't influenced by any action, then given them uniform belongingness.
                 if (table.isSourceOnly(user)){
@@ -85,10 +91,11 @@ class AudienceInfluenceAnalysis(val table: InfluenceTable, val clusters: Int, va
     private fun totalClusterInfluence(influencee: String, cluster: Int): Double =
         influence.map{ table.influence(influencee, it.key) * ln(it.value[cluster]) }.sum()
 
-    private fun emUntilConvergence(limit: Int = 1000, stoppingCriteria: Double = 0.01){
+    fun emUntilConvergence(limit: Int = 1000, stoppingCriteria: Double = 0.01){
         var steps = 0
         do {
             val diff = emStep()
+            log("diff: $diff")
             steps++
         } while (steps < limit && diff > stoppingCriteria)
     }
@@ -125,7 +132,7 @@ class AudienceInfluenceAnalysis(val table: InfluenceTable, val clusters: Int, va
         // for v in V
         for ((v, vBelongingness) in belongingness) {
             // for c in C
-            for (cluster in 0..clusters){
+            for (cluster in 0 until clusters){
                 // ηvc * log(ϕc)
                 current += vBelongingness[cluster] * logPriors[cluster]
                 next += vBelongingness[cluster] * logNewPriors[cluster]
@@ -138,10 +145,8 @@ class AudienceInfluenceAnalysis(val table: InfluenceTable, val clusters: Int, va
             }
         }
 
-        require(next >= current) { "Likelihood did not improve or converge, but got worse, this should be impossible (incorrect algorithm)."}
+        require(next >= current) { "Likelihood did not improve or converge, but got worse, this should be impossible (incorrect algorithm). Current: $current Next: $next"}
+        log("current: $current\nnext: $next")
         return next - current
     }
-
-    fun users(): Set<String> =
-        table.users()
 }
